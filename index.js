@@ -181,7 +181,9 @@ function jasper(options) {
 			self.jfm = java.import('net.sf.jasperreports.engine.JasperFillManager');
 			self.jem = java.import('net.sf.jasperreports.engine.JasperExportManager');
 			self.loc = java.import('java.util.Locale');
-
+			self.JRExporterParameter = java.import('net.sf.jasperreports.engine.JRExporterParameter');
+			self.JRXlsExporter = java.import('net.sf.jasperreports.engine.export.JRXlsExporter');
+			self.JRCsvExporter = java.import('net.sf.jasperreports.engine.export.JRCsvExporter');
 			cb();
 		}]
 
@@ -210,6 +212,14 @@ jasper.prototype.add = function(name, def) {
 
 jasper.prototype.pdf = function(report) {
   return this.export(report, 'pdf');
+}
+
+jasper.prototype.xls = function(report) {
+	return this.export(report, 'xls');
+}
+
+jasper.prototype.csv = function(report) {
+	return this.export(report, 'csv');
 }
 
 /*
@@ -346,8 +356,24 @@ jasper.prototype.export = function(report, type) {
 				master.addPageSync(p.getPagesSync().getSync(j));
 			}
 		});
-		var tempName = temp.path({suffix: '.pdf'});
-		self.jem['exportReportTo'+type+'FileSync'](master, tempName);
+		if (type.match(/pdf/i)) {
+			var tempName = temp.path({suffix: '.pdf'});
+			self.jem['exportReportTo'+type+'FileSync'](master, tempName);
+		}
+		else if (type.match(/xls/i)) {
+			var tempName = temp.path({suffix: '.xls'});
+			var exporter = new self.JRXlsExporter();
+			exporter.setParameterSync(self.JRExporterParameter.JASPER_PRINT, master);
+			exporter.setParameterSync(self.JRExporterParameter.OUTPUT_FILE_NAME, tempName);
+			exporter.exportReportSync();
+		}
+		else if (type.match(/csv/i)) {
+			var tempName = temp.path({suffix: '.csv'});
+			var exporter = new self.JRCsvExporter();
+			exporter.setParameterSync(self.JRExporterParameter.JASPER_PRINT, master);
+			exporter.setParameterSync(self.JRExporterParameter.OUTPUT_FILE_NAME, tempName);
+			exporter.exportReportSync();
+		}
 		var exp = fs.readFileSync(tempName);
 		fs.unlinkSync(tempName);
 		return exp;
