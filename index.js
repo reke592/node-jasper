@@ -1,3 +1,6 @@
+// from https://github.com/agmoyano/node-jasper
+// modified version of node-jasper package index.js
+
 var java=null,
 	fs = require('fs'),
 	path = require('path'),
@@ -182,7 +185,8 @@ function jasper(options) {
 			self.jem = java.import('net.sf.jasperreports.engine.JasperExportManager');
 			self.loc = java.import('java.util.Locale');
 			self.JRExporterParameter = java.import('net.sf.jasperreports.engine.JRExporterParameter');
-			self.JRXlsExporter = java.import('net.sf.jasperreports.engine.export.JRXlsExporter');
+			// self.JRXlsExporter = java.import('net.sf.jasperreports.engine.export.JRXlsExporter');
+      self.JRXlsxExporter = java.import('net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter');
 			self.JRCsvExporter = java.import('net.sf.jasperreports.engine.export.JRCsvExporter');
 			cb();
 		}]
@@ -214,8 +218,8 @@ jasper.prototype.pdf = function(report) {
   return this.export(report, 'pdf');
 }
 
-jasper.prototype.xls = function(report) {
-	return this.export(report, 'xls');
+jasper.prototype.xlsx = function(report) {
+	return this.export(report, 'xlsx');
 }
 
 jasper.prototype.csv = function(report) {
@@ -360,9 +364,9 @@ jasper.prototype.export = function(report, type) {
 			var tempName = temp.path({suffix: '.pdf'});
 			self.jem['exportReportTo'+type+'FileSync'](master, tempName);
 		}
-		else if (type.match(/xls/i)) {
-			var tempName = temp.path({suffix: '.xls'});
-			var exporter = new self.JRXlsExporter();
+		else if (type.match(/xlsx/i)) {
+			var tempName = temp.path({suffix: '.xlsx'});
+			var exporter = new self.JRXlsxExporter();
 			exporter.setParameterSync(self.JRExporterParameter.JASPER_PRINT, master);
 			exporter.setParameterSync(self.JRExporterParameter.OUTPUT_FILE_NAME, tempName);
 			exporter.exportReportSync();
